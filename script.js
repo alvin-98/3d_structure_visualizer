@@ -10,6 +10,59 @@ document.addEventListener("DOMContentLoaded", function () {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   const container = document.getElementById("canvas-container");
 
+  // Variables for rotation handling
+  let isDragging = false;
+  let previousMousePosition = {
+    x: 0,
+    y: 0,
+  };
+
+  // Add mouse/touch event listeners for rotation
+  container.addEventListener("mousedown", startDragging);
+  container.addEventListener("mousemove", drag);
+  container.addEventListener("mouseup", stopDragging);
+  container.addEventListener("mouseleave", stopDragging);
+
+  // Touch events
+  container.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    startDragging(e.touches[0]);
+  });
+  container.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    drag(e.touches[0]);
+  });
+  container.addEventListener("touchend", stopDragging);
+
+  function startDragging(event) {
+    isDragging = true;
+    previousMousePosition = {
+      x: event.clientX,
+      y: event.clientY,
+    };
+  }
+
+  function drag(event) {
+    if (!isDragging || !mesh) return;
+
+    const deltaMove = {
+      x: event.clientX - previousMousePosition.x,
+      y: event.clientY - previousMousePosition.y,
+    };
+
+    mesh.rotation.y += deltaMove.x * 0.01;
+    mesh.rotation.x += deltaMove.y * 0.01;
+
+    previousMousePosition = {
+      x: event.clientX,
+      y: event.clientY,
+    };
+  }
+
+  function stopDragging() {
+    isDragging = false;
+  }
+
   // Set renderer size and add to container
   function updateRendererSize() {
     renderer.setSize(container.clientWidth, container.clientHeight);
@@ -129,9 +182,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // Animation loop
   function animate() {
     requestAnimationFrame(animate);
-    if (mesh) {
-      mesh.rotation.y += 0.005;
-    }
     renderer.render(scene, camera);
   }
 
