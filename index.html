@@ -16,6 +16,7 @@
         <div class="input-section">
           <select id="shapeSelect">
             <option value="trapezoid">Trapezoid Prism</option>
+            <option value="cuboid">Cuboid</option>
             <option value="cylinder">Cylinder</option>
             <option value="cone">Cone</option>
           </select>
@@ -78,6 +79,106 @@
               step="0.1"
             />
             <span id="lengthValue">10</span> m
+          </div>
+        </div>
+
+        <div class="parameters" id="cylinderParams" style="display: none">
+          <h2>Parameters</h2>
+          <div class="param-group">
+            <label for="cylinderHeight">Height (h):</label>
+            <input
+              type="range"
+              id="cylinderHeight"
+              min="1"
+              max="20"
+              value="10"
+              step="0.1"
+            />
+            <span id="cylinderHeightValue">10</span> m
+          </div>
+
+          <div class="param-group">
+            <label for="radius">Radius (r):</label>
+            <input
+              type="range"
+              id="radius"
+              min="1"
+              max="20"
+              value="5"
+              step="0.1"
+            />
+            <span id="radiusValue">5</span> m
+          </div>
+        </div>
+
+        <div class="parameters" id="coneParams" style="display: none">
+          <h2>Parameters</h2>
+          <div class="param-group">
+            <label for="coneHeight">Height (h):</label>
+            <input
+              type="range"
+              id="coneHeight"
+              min="1"
+              max="20"
+              value="10"
+              step="0.1"
+            />
+            <span id="coneHeightValue">10</span> m
+          </div>
+
+          <div class="param-group">
+            <label for="coneRadius">Radius (r):</label>
+            <input
+              type="range"
+              id="coneRadius"
+              min="1"
+              max="20"
+              value="5"
+              step="0.1"
+            />
+            <span id="coneRadiusValue">5</span> m
+          </div>
+        </div>
+
+        <div class="parameters" id="cuboidParams" style="display: none">
+          <h2>Parameters</h2>
+          <div class="param-group">
+            <label for="cuboidHeight">Height (h):</label>
+            <input
+              type="range"
+              id="cuboidHeight"
+              min="1"
+              max="20"
+              value="10"
+              step="0.1"
+            />
+            <span id="cuboidHeightValue">10</span> m
+          </div>
+
+          <div class="param-group">
+            <label for="width">Width (w):</label>
+            <input
+              type="range"
+              id="width"
+              min="1"
+              max="20"
+              value="5"
+              step="0.1"
+            />
+            <span id="widthValue">5</span> m
+          </div>
+
+          <div class="param-group">
+            <label for="depth">Depth (d):</label>
+            <input
+              type="range"
+              id="depth"
+              min="1"
+              max="20"
+              value="8"
+              step="0.1"
+            />
+            <span id="depthValue">8</span> m
           </div>
         </div>
 

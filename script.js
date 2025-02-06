@@ -116,16 +116,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Form elements
   const volumeInput = document.getElementById("volume");
+  const shapeSelect = document.getElementById("shapeSelect");
+
+  // Shape parameter containers
+  const trapezoidParams = document.getElementById("trapezoidParams");
+  const cuboidParams = document.getElementById("cuboidParams");
+  const cylinderParams = document.getElementById("cylinderParams");
+  const coneParams = document.getElementById("coneParams");
+
+  // Trapezoid elements
   const heightInput = document.getElementById("height");
   const sideAInput = document.getElementById("sideA");
   const sideBInput = document.getElementById("sideB");
   const lengthInput = document.getElementById("length");
+
+  // Cuboid elements
+  const cuboidHeightInput = document.getElementById("cuboidHeight");
+  const widthInput = document.getElementById("width");
+  const depthInput = document.getElementById("depth");
+
+  // Cylinder elements
+  const cylinderHeightInput = document.getElementById("cylinderHeight");
+  const radiusInput = document.getElementById("radius");
+
+  // Cone elements
+  const coneHeightInput = document.getElementById("coneHeight");
+  const coneRadiusInput = document.getElementById("coneRadius");
 
   // Value display elements
   const heightValue = document.getElementById("heightValue");
   const sideAValue = document.getElementById("sideAValue");
   const sideBValue = document.getElementById("sideBValue");
   const lengthValue = document.getElementById("lengthValue");
+  const cuboidHeightValue = document.getElementById("cuboidHeightValue");
+  const widthValue = document.getElementById("widthValue");
+  const depthValue = document.getElementById("depthValue");
+  const cylinderHeightValue = document.getElementById("cylinderHeightValue");
+  const radiusValue = document.getElementById("radiusValue");
+  const coneHeightValue = document.getElementById("coneHeightValue");
+  const coneRadiusValue = document.getElementById("coneRadiusValue");
   const currentVolume = document.getElementById("currentVolume");
 
   // Geometry variables
@@ -155,18 +184,77 @@ document.addEventListener("DOMContentLoaded", function () {
     return geometry;
   }
 
+  function createCylinderGeometry(height, radius) {
+    const geometry = new THREE.CylinderGeometry(radius, radius, height, 32);
+    geometry.translate(0, 0, 0);
+    return geometry;
+  }
+
+  function createConeGeometry(height, radius) {
+    const geometry = new THREE.ConeGeometry(radius, height, 32);
+    geometry.translate(0, 0, 0);
+    return geometry;
+  }
+
+  function createCuboidGeometry(height, width, depth) {
+    const geometry = new THREE.BoxGeometry(width, height, depth);
+    return geometry;
+  }
+
+  function showActiveParams() {
+    const shape = shapeSelect.value;
+    trapezoidParams.style.display = shape === "trapezoid" ? "block" : "none";
+    cuboidParams.style.display = shape === "cuboid" ? "block" : "none";
+    cylinderParams.style.display = shape === "cylinder" ? "block" : "none";
+    coneParams.style.display = shape === "cone" ? "block" : "none";
+  }
+
   function updateGeometry() {
-    const height = parseFloat(heightInput.value);
-    const sideA = parseFloat(sideAInput.value);
-    const sideB = parseFloat(sideBInput.value);
-    const length = parseFloat(lengthInput.value);
+    const shape = shapeSelect.value;
     const targetVolume = parseFloat(volumeInput.value);
+    let volume;
 
     // Remove existing mesh if it exists
     if (mesh) scene.remove(mesh);
 
-    // Create new geometry
-    geometry = createTrapezoidGeometry(height, sideA, sideB, length);
+    switch (shape) {
+      case "trapezoid": {
+        const height = parseFloat(heightInput.value);
+        const sideA = parseFloat(sideAInput.value);
+        const sideB = parseFloat(sideBInput.value);
+        const length = parseFloat(lengthInput.value);
+
+        geometry = createTrapezoidGeometry(height, sideA, sideB, length);
+        volume = ((sideA + sideB) / 2) * height * length;
+        break;
+      }
+      case "cuboid": {
+        const height = parseFloat(cuboidHeightInput.value);
+        const width = parseFloat(widthInput.value);
+        const depth = parseFloat(depthInput.value);
+
+        geometry = createCuboidGeometry(height, width, depth);
+        volume = width * height * depth;
+        break;
+      }
+      case "cylinder": {
+        const height = parseFloat(cylinderHeightInput.value);
+        const radius = parseFloat(radiusInput.value);
+
+        geometry = createCylinderGeometry(height, radius);
+        volume = Math.PI * radius * radius * height;
+        break;
+      }
+      case "cone": {
+        const height = parseFloat(coneHeightInput.value);
+        const radius = parseFloat(coneRadiusInput.value);
+
+        geometry = createConeGeometry(height, radius);
+        volume = (1 / 3) * Math.PI * radius * radius * height;
+        break;
+      }
+    }
+
     material = new THREE.MeshPhongMaterial({
       color: 0x3498db,
       transparent: true,
@@ -176,21 +264,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     mesh = new THREE.Mesh(geometry, material);
-    // Keep mesh at origin since geometry is already centered
     mesh.position.set(0, 0, 0);
     scene.add(mesh);
 
-    // Calculate and update volume
-    const volume = ((sideA + sideB) / 2) * height * length;
     currentVolume.textContent = volume.toFixed(2);
-    // Update volume text color based on target volume
     currentVolume.style.color = volume > targetVolume ? "#ff4444" : "#2c3e50";
-
-    // Update slider values display
-    heightValue.textContent = height.toFixed(1);
-    sideAValue.textContent = sideA.toFixed(1);
-    sideBValue.textContent = sideB.toFixed(1);
-    lengthValue.textContent = length.toFixed(1);
   }
 
   function updateSliderConstraints() {
@@ -205,10 +283,21 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Add event listeners
+  shapeSelect.addEventListener("change", () => {
+    showActiveParams();
+    updateGeometry();
+  });
   heightInput.addEventListener("input", updateGeometry);
   sideAInput.addEventListener("input", updateGeometry);
   sideBInput.addEventListener("input", updateGeometry);
   lengthInput.addEventListener("input", updateGeometry);
+  cuboidHeightInput.addEventListener("input", updateGeometry);
+  widthInput.addEventListener("input", updateGeometry);
+  depthInput.addEventListener("input", updateGeometry);
+  cylinderHeightInput.addEventListener("input", updateGeometry);
+  radiusInput.addEventListener("input", updateGeometry);
+  coneHeightInput.addEventListener("input", updateGeometry);
+  coneRadiusInput.addEventListener("input", updateGeometry);
   volumeInput.addEventListener("input", updateSliderConstraints);
 
   // Handle window resize
