@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   // Three.js setup
   const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf0f0f0); // Light gray background
   const camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
@@ -9,6 +10,23 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   const container = document.getElementById("canvas-container");
+
+  // Add axes helper
+  const axesHelper = new THREE.AxesHelper(10);
+  scene.add(axesHelper);
+
+  // Camera orbit variables
+  let radius = 20;
+  let theta = Math.PI / 4; // horizontal angle
+  let phi = Math.PI / 4; // vertical angle
+
+  function updateCameraPosition() {
+    // Convert spherical coordinates to Cartesian
+    camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
+    camera.position.y = radius * Math.cos(phi);
+    camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
+    camera.lookAt(0, 0, 0);
+  }
 
   // Variables for rotation handling
   let isDragging = false;
@@ -43,15 +61,18 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function drag(event) {
-    if (!isDragging || !mesh) return;
+    if (!isDragging) return;
 
     const deltaMove = {
       x: event.clientX - previousMousePosition.x,
       y: event.clientY - previousMousePosition.y,
     };
 
-    mesh.rotation.y += deltaMove.x * 0.01;
-    mesh.rotation.x += deltaMove.y * 0.01;
+    // Update angles
+    theta -= deltaMove.x * 0.01;
+    phi = Math.max(0.1, Math.min(Math.PI - 0.1, phi + deltaMove.y * 0.01));
+
+    updateCameraPosition();
 
     previousMousePosition = {
       x: event.clientX,
@@ -73,18 +94,24 @@ document.addEventListener("DOMContentLoaded", function () {
   container.appendChild(renderer.domElement);
 
   // Add lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-  directionalLight.position.set(1, 1, 1);
-  scene.add(directionalLight);
 
-  // Camera position
-  camera.position.set(15, 15, 15);
-  camera.lookAt(0, 0, 0);
+  // Add directional lights from different angles
+  const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.4);
+  directionalLight1.position.set(5, 5, 5);
+  scene.add(directionalLight1);
+
+  const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
+  directionalLight2.position.set(-5, 5, -5);
+  scene.add(directionalLight2);
+
+  // Initial camera position
+  updateCameraPosition();
 
   // Add grid helper
-  const gridHelper = new THREE.GridHelper(20, 20);
+  const gridHelper = new THREE.GridHelper(20, 20, 0x888888, 0x444444);
+  gridHelper.position.y = 0; // Align with the bottom of the shape
   scene.add(gridHelper);
 
   // Form elements
@@ -122,7 +149,10 @@ document.addEventListener("DOMContentLoaded", function () {
       bevelEnabled: false,
     };
 
-    return new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    // Translate geometry so extrusion is centered at y=0
+    geometry.translate(0, 0, -height / 2);
+    return geometry;
   }
 
   function updateGeometry() {
@@ -130,6 +160,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const sideA = parseFloat(sideAInput.value);
     const sideB = parseFloat(sideBInput.value);
     const length = parseFloat(lengthInput.value);
+    const targetVolume = parseFloat(volumeInput.value);
 
     // Remove existing mesh if it exists
     if (mesh) scene.remove(mesh);
@@ -141,15 +172,19 @@ document.addEventListener("DOMContentLoaded", function () {
       transparent: true,
       opacity: 0.8,
       side: THREE.DoubleSide,
+      shininess: 50,
     });
 
     mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(0, height / 2, 0);
+    // Keep mesh at origin since geometry is already centered
+    mesh.position.set(0, 0, 0);
     scene.add(mesh);
 
     // Calculate and update volume
     const volume = ((sideA + sideB) / 2) * height * length;
     currentVolume.textContent = volume.toFixed(2);
+    // Update volume text color based on target volume
+    currentVolume.style.color = volume > targetVolume ? "#ff4444" : "#2c3e50";
 
     // Update slider values display
     heightValue.textContent = height.toFixed(1);
@@ -188,4 +223,11 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initial setup
   updateGeometry();
   animate();
+
+  // Add mouse wheel event for zoom
+  container.addEventListener("wheel", (event) => {
+    event.preventDefault();
+    radius = Math.max(5, Math.min(50, radius + event.deltaY * 0.05));
+    updateCameraPosition();
+  });
 });
